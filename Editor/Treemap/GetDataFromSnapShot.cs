@@ -77,15 +77,15 @@ namespace Treemap
 				group._items.Sort();
 				
 				memTltalSize += group.totalMemorySize;
-				Debug.Log(group._name);
+				//Debug.Log(group._name);
 			}
 
 			foreach (Group group in _groups.Values)
 			{
 
 				group._membCount = group._items.Count;
-				group._Size = group.totalMemorySize;
-				group._Percent = ""+group.totalMemorySize/memTltalSize;
+				group._Size = GetDataFromSnapShot.FormatBytes((long)group.totalMemorySize);
+				group._Percent = "%"+Math.Round(100*group.totalMemorySize/memTltalSize,2);
 				_group0.Add(group);
 
 				
@@ -95,6 +95,23 @@ namespace Treemap
 			_items.Sort();
 
 		}
+		public static string FormatBytes(long bytes)
+    	{
+        	if (bytes < 0)
+            	return "error bytes";
+        
+        	if (bytes<1024)
+        	{
+           	 	return bytes + "b";
+        	}	
+        	else if (bytes < 1024 * 1024)
+        	{	
+            	return bytes / 1024 + "kb";
+        	}
+        	else {
+            	return bytes / 1024 /1024 + "mb";
+        	}
+    	}
 
 		public string GetGroupName(ThingInMemory thing)
 		{

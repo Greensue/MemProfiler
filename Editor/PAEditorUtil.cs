@@ -12,7 +12,10 @@ public class PAEditorUtil
         if (obj == null)
             return "";
         if (fieldInfo == null)
+        {
             return "";
+            Debug.Log("fieldInfo == null");
+        }
 
         return fieldInfo.GetValue(obj);
     }

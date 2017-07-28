@@ -34,6 +34,9 @@ public class WindowTest : EditorWindow {
 	public string[] toolbarStrings = new string[] {"SnapshotDisplay", "Snapshots Compare", "Stataics and Anasys"};
 
 	GUILayoutOption [] options = new GUILayoutOption[]{GUILayout.MaxWidth(500)};
+	public TableView _table;
+
+
 	[MenuItem("Window/ProfilerTest")]
     public static void Init()
 	{
@@ -64,6 +67,14 @@ public class WindowTest : EditorWindow {
 
 		// // register the event-handling function
 		// _table.OnSelected += TableView_Selected;
+		_table = new TableView(this, typeof(Group));
+
+		_table.AddColumn("_name", "Name", 0.4f, TextAnchor.MiddleLeft);
+		//_table.AddColumn("Count_A", "Count_A", 0.1f);
+		_table.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
+		_table.AddColumn("_Size", "Size", 0.2f);
+		_table.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, "0.000");
+
 	}
 
 
@@ -75,14 +86,7 @@ public class WindowTest : EditorWindow {
 			UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived += IncomingSnapshot;
 			_registered = true;
 		}
-		_table = new TableView(this, typeof(Group));
-
-		_table.AddColumn("_name", "Name", 0.4f, TextAnchor.MiddleLeft);
-		//_table.AddColumn("Count_A", "Count_A", 0.1f);
-		_table.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
-		_table.AddColumn("_Size", "Size", 0.2f);
-		_table.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, "0.000");
-
+		
 		
 		if (_unpackedCrawl == null && _packedCrawled != null && _packedCrawled.valid)
 			Unpack();
@@ -119,7 +123,7 @@ public class WindowTest : EditorWindow {
 			_unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
 			_inspector = new Inspector(this, _unpackedCrawl, _snapshot);
 			//_treeMapView = new TreeMapView(this, _unpackedCrawl);
-			GetDataFromSnapShot getDataFromSnapShot = new GetDataFromSnapShot(_unpackedCrawl);
+			/*GetDataFromSnapShot getDataFromSnapShot = new GetDataFromSnapShot(_unpackedCrawl);
 			getDataFromSnapShot.GetCompleteData();
 			List<object> entries = new List<object>();
 			if (getDataFromSnapShot._group0 != null) {
@@ -131,6 +135,9 @@ public class WindowTest : EditorWindow {
 			}
 			Debug.Log (entries.Count);
 			_table.RefreshData(entries);
+			this.Repaint();*/
+
+
 		    //_table.RefreshData(getDataFromSnapShot._group0);
 
 		// register the event-handling function
@@ -164,16 +171,36 @@ public class WindowTest : EditorWindow {
 			if (GUILayout.Button("Take Snapshot"))
 			{
 				UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
+				
 			}
 			GUILayout.EndHorizontal ();
 
-		if (_inspector != null)
+			if (_inspector != null)
 				_inspector.Draw();
+			if (_table != null&&_unpackedCrawl!=null)
+			{
+				GetDataFromSnapShot getDataFromSnapShot = new GetDataFromSnapShot(_unpackedCrawl);
+				getDataFromSnapShot.GetCompleteData();
+				List<object> entries = new List<object>();
+				if (getDataFromSnapShot._group0 != null) 
+				{
+					Debug.Log ("getDataFromSnapShot != null");
+					foreach(Group gr in getDataFromSnapShot._group0)
+					{
+						entries.Add(gr);
+					}
+				}
+					Debug.Log (entries.Count);
+					_table.RefreshData(entries);
+
+					_table.Draw(new Rect(0, 22, m_DrawArea.width * 0.6f, m_DrawArea.height - 20));
+
+				}
+				
+			    
 
 		//GUILayout.BeginArea(new Rect(20, 20, position.width * 0.8f, position.height - 80));
-		if (_table != null)
-				
-			_table.Draw(new Rect(0, 20, m_DrawArea.width * 0.5f, m_DrawArea.height - 20));
+		
 		//GUILayout.EndArea();
 
 		GUILayout.EndVertical();
@@ -188,7 +215,7 @@ public class WindowTest : EditorWindow {
 	}
 
 
-public TableView _table;
+
 
 
 

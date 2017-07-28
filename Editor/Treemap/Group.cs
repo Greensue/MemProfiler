@@ -9,12 +9,12 @@ using UnityEngine;
 
 namespace Treemap 
 {
-	public class Group : object,IComparable<Group>
+	public class Group //: IComparable<Group>
 	{
 		public string _name;
 		public Rect _position;
 		public List<Item> _items;
-		public float _Size;
+		public string _Size;
 		public int _membCount;
 		public string _Percent;
 
@@ -65,9 +65,9 @@ namespace Treemap
 			get { return Utility.GetColorForName(_name); }
 		}
 
-		public int CompareTo(Group other)
+		/*public int CompareTo(Group other)
 		{
 			return (int)(other.totalMemorySize - totalMemorySize);
-		}
+		}*/
 	}
 }

@@ -66,7 +66,7 @@ public partial class TableView : IDisposable
     {
         GUILayout.BeginArea(area);
 
-         DrawTitle(area.width);
+         DrawTitle(area.width); 
 		GUILayout.Space (25);
          
         _scrollPos = GUILayout.BeginScrollView(_scrollPos, GUIStyle.none, GUI.skin.verticalScrollbar);
