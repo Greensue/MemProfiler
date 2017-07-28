@@ -72,8 +72,9 @@ public class WindowTest : EditorWindow {
 		_table.AddColumn("_name", "Name", 0.4f, TextAnchor.MiddleLeft);
 		//_table.AddColumn("Count_A", "Count_A", 0.1f);
 		_table.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
-		_table.AddColumn("_Size", "Size", 0.2f);
-		_table.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, "0.000");
+		_table.AddColumn("_Size", "Size", 0.2f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
+		_table.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, PAEditorConst.PercentsFormatter);
+		_table.OnSelected += TableView_Selected;
 
 	}
 
@@ -95,17 +96,10 @@ public class WindowTest : EditorWindow {
 
 	void TableView_Selected(object selected, int col)
 	{
-		FooItem foo = selected as FooItem;
-		if (foo == null)
+		if(selected is Group)
 		{
-			Debug.LogErrorFormat("the selected object is not a valid one. ({0} expected, {1} got)",
-				typeof(FooItem).ToString(), selected.GetType().ToString());
-			return;
+			Debug.Log("haahhahahahh");
 		}
-
-		string text = string.Format("object '{0}' selected. (col={1})", foo.Name, col);
-		Debug.Log(text);
-		ShowNotification(new GUIContent(text));
 	}
 	
 
@@ -163,7 +157,9 @@ public class WindowTest : EditorWindow {
 
 
 
-
+		m_DrawArea.width = this.position.width;
+		m_DrawArea.height = this.position.height;
+		
 		GUILayout.BeginArea(m_DrawArea,background);
 		GUILayout.BeginVertical();
 			GUILayout.BeginHorizontal ();
@@ -184,13 +180,13 @@ public class WindowTest : EditorWindow {
 				List<object> entries = new List<object>();
 				if (getDataFromSnapShot._group0 != null) 
 				{
-					Debug.Log ("getDataFromSnapShot != null");
+					//Debug.Log ("getDataFromSnapShot != null");
 					foreach(Group gr in getDataFromSnapShot._group0)
 					{
 						entries.Add(gr);
 					}
 				}
-					Debug.Log (entries.Count);
+					//Debug.Log (entries.Count);
 					_table.RefreshData(entries);
 
 					_table.Draw(new Rect(0, 22, m_DrawArea.width * 0.6f, m_DrawArea.height - 20));

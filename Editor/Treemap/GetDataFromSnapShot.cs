@@ -84,8 +84,8 @@ namespace Treemap
 			{
 
 				group._membCount = group._items.Count;
-				group._Size = GetDataFromSnapShot.FormatBytes((long)group.totalMemorySize);
-				group._Percent = "%"+Math.Round(100*group.totalMemorySize/memTltalSize,2);
+				group._Size = group.totalMemorySize;
+				group._Percent = (float)Math.Round(100*group.totalMemorySize/memTltalSize,2);
 				_group0.Add(group);
 
 				
@@ -95,24 +95,7 @@ namespace Treemap
 			_items.Sort();
 
 		}
-		public static string FormatBytes(long bytes)
-    	{
-        	if (bytes < 0)
-            	return "error bytes";
-        
-        	if (bytes<1024)
-        	{
-           	 	return bytes + "b";
-        	}	
-        	else if (bytes < 1024 * 1024)
-        	{	
-            	return bytes / 1024 + "kb";
-        	}
-        	else {
-            	return bytes / 1024 /1024 + "mb";
-        	}
-    	}
-
+		
 		public string GetGroupName(ThingInMemory thing)
 		{
 			if (thing is NativeUnityEngineObject)

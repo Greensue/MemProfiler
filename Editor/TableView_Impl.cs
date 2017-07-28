@@ -70,6 +70,7 @@ public partial class TableView
         if (selectionHappens && rect.Contains(Event.current.mousePosition))
         {
             m_selectedCol = col;
+            Debug.Log("selectionHappens && rect.Contains(Event.current.mousePosition)");
             if (OnSelected != null)
                 OnSelected(obj, col);
             m_hostWindow.Repaint();

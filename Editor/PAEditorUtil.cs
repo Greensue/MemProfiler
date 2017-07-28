@@ -4,6 +4,7 @@ using UnityEditor;
 using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
+using System;
 
 public class PAEditorUtil
 {
@@ -26,13 +27,41 @@ public class PAEditorUtil
             return "";
 
         if (fmt == PAEditorConst.BytesFormatter)
-            return EditorUtility.FormatBytes((int)val);
+            return PAEditorUtil.FormatBytes((float)val);
+        if (fmt == PAEditorConst.PercentsFormatter)
+            return PAEditorUtil.PercentsFormatter((float)val);
         if (val is float)
             return ((float)val).ToString(fmt);
         if (val is double)
             return ((double)val).ToString(fmt);
         return val.ToString();
     }
+
+    public static string PercentsFormatter(float val)
+    {
+        return "%"+val;
+
+    }
+
+    public static string FormatBytes(float bytes)
+        {
+
+            if (bytes < 0)
+                return "error bytes";
+        
+            if (bytes<1024)
+            {
+                return String.Format("{0:F}",bytes) + "b";
+            }   
+            else if (bytes < 1024 * 1024)
+            {   
+                return String.Format("{0:F}",bytes/1024) + "kb";
+            }
+            else {
+                return String.Format("{0:F}",bytes/1024/1024) + "mb";
+            }
+        }
+
 
     public static string GetRandomString()
     {

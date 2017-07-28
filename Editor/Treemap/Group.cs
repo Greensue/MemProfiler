@@ -14,9 +14,9 @@ namespace Treemap
 		public string _name;
 		public Rect _position;
 		public List<Item> _items;
-		public string _Size;
+		public float _Size;
 		public int _membCount;
-		public string _Percent;
+		public float _Percent;
 
 		private float _totalMemorySize = -1;
 
