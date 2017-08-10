@@ -10,6 +10,7 @@ using Treemap;
 using UnityEditor.MemoryProfiler;
 using UnityEngine.Assertions;
 
+
 namespace MemoryProfilerWindow
 {
 public class WindowTest : EditorWindow {
@@ -34,7 +35,9 @@ public class WindowTest : EditorWindow {
 	public string[] toolbarStrings = new string[] {"SnapshotDisplay", "Snapshots Compare", "Stataics and Anasys"};
 
 	GUILayoutOption [] options = new GUILayoutOption[]{GUILayout.MaxWidth(500)};
-	public TableView _table;
+	public TableView _gruopTable;
+	public TableView _ItemTable;
+	
 
 
 	[MenuItem("Window/ProfilerTest")]
@@ -42,8 +45,9 @@ public class WindowTest : EditorWindow {
 	{
 		
 		// Get existing open window or if none, make a new one:
-
 		WindowTest window = (WindowTest)EditorWindow.GetWindow(typeof(WindowTest));
+
+		
 		window.titleContent = new GUIContent("MemoryProfiler");
 
 		window.Show();
@@ -53,28 +57,35 @@ public class WindowTest : EditorWindow {
 	void Awake()
 	{
 		// create the table with a specified object type
-		//_table = new TableView(this, typeof(Group));
+		//_gruopTable = new TableView(this, typeof(Group));
 
 		// setup the description for content
 		
-		//_table.AddColumn("Time_B", "Time_B", 0.15f, TextAnchor.MiddleCenter, "0.0");
+		//_gruopTable.AddColumn("Time_B", "Time_B", 0.15f, TextAnchor.MiddleCenter, "0.0");
 
 		// add test data
 		// List<object> entries = new List<object>();
 		// for (int i = 0; i < 100; i++)
 		// 	entries.Add(FooItem.MakeRandom());
-		// _table.RefreshData(entries);
+		// _gruopTable.RefreshData(entries);
 
 		// // register the event-handling function
-		// _table.OnSelected += TableView_Selected;
-		_table = new TableView(this, typeof(Group));
+		// _gruopTable.OnSelected += TableView_Selected;
+		_gruopTable = new TableView(this, typeof(Group));
 
-		_table.AddColumn("_name", "Name", 0.4f, TextAnchor.MiddleLeft);
-		//_table.AddColumn("Count_A", "Count_A", 0.1f);
-		_table.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
-		_table.AddColumn("_Size", "Size", 0.2f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
-		_table.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, PAEditorConst.PercentsFormatter);
-		_table.OnSelected += TableView_Selected;
+		_gruopTable.AddColumn("_name", "Name", 0.4f, TextAnchor.MiddleLeft);
+		//_gruopTable.AddColumn("Count_A", "Count_A", 0.1f);
+		_gruopTable.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
+		_gruopTable.AddColumn("_Size", "Size", 0.2f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
+		_gruopTable.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, PAEditorConst.PercentsFormatter);
+		_gruopTable.OnSelected += groupTabSelected;
+
+		_ItemTable = new TableView(this, typeof(Item));
+		_ItemTable.AddColumn("name", "Name", 0.5f, TextAnchor.MiddleLeft);
+		_ItemTable.AddColumn("memorySize", "Size", 0.5f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
+		_ItemTable.OnSelected += itemTabSelected;
+
+
 
 	}
 
@@ -94,12 +105,36 @@ public class WindowTest : EditorWindow {
 	}
 
 
-	void TableView_Selected(object selected, int col)
+	void groupTabSelected(object selected, int col)
 	{
-		if(selected is Group)
+		Group gr = selected as Group;
+		if(gr == null)
 		{
-			Debug.Log("haahhahahahh");
+			return;
 		}
+
+		List<object> itemEntries = new List<object>();
+		foreach(Item item in gr._items)
+		{
+			itemEntries.Add(item);
+		}
+
+		_ItemTable.RefreshData(itemEntries);
+
+
+	}
+
+
+	void itemTabSelected(object selected, int col)
+	{
+
+        var itemObject = selected as Item;
+        if (itemObject == null)
+            return;
+        WindowTest window = (WindowTest)EditorWindow.GetWindow(typeof(WindowTest));
+
+        window.SelectThing(itemObject._thingInMemory);
+
 	}
 	
 
@@ -128,14 +163,14 @@ public class WindowTest : EditorWindow {
 				}
 			}
 			Debug.Log (entries.Count);
-			_table.RefreshData(entries);
+			_gruopTable.RefreshData(entries);
 			this.Repaint();*/
 
 
-		    //_table.RefreshData(getDataFromSnapShot._group0);
+		    //_gruopTable.RefreshData(getDataFromSnapShot._group0);
 
 		// register the event-handling function
-		//_table.OnSelected += TableView_Selected;
+		//_gruopTable.OnSelected += TableView_Selected;
 
 		}
 
@@ -143,7 +178,7 @@ public class WindowTest : EditorWindow {
 		public void SelectThing(ThingInMemory thing)
 		{
 			_inspector.SelectThing(thing);
-			//_treeMapView.SelectThing(thing);
+			
 		}
 
 
@@ -157,7 +192,7 @@ public class WindowTest : EditorWindow {
 
 
 
-		m_DrawArea.width = this.position.width;
+		m_DrawArea.width = this.position.width - PAEditorConst.InspectorWidth;
 		m_DrawArea.height = this.position.height;
 		
 		GUILayout.BeginArea(m_DrawArea,background);
@@ -171,9 +206,8 @@ public class WindowTest : EditorWindow {
 			}
 			GUILayout.EndHorizontal ();
 
-			if (_inspector != null)
-				_inspector.Draw();
-			if (_table != null&&_unpackedCrawl!=null)
+			
+			if (_gruopTable != null&&_unpackedCrawl!=null)
 			{
 				GetDataFromSnapShot getDataFromSnapShot = new GetDataFromSnapShot(_unpackedCrawl);
 				getDataFromSnapShot.GetCompleteData();
@@ -187,11 +221,19 @@ public class WindowTest : EditorWindow {
 					}
 				}
 					//Debug.Log (entries.Count);
-					_table.RefreshData(entries);
+					_gruopTable.RefreshData(entries);
 
-					_table.Draw(new Rect(0, 22, m_DrawArea.width * 0.6f, m_DrawArea.height - 20));
+					_gruopTable.Draw(new Rect(5, 22, m_DrawArea.width * 0.5f, m_DrawArea.height - 20));
 
-				}
+			}
+			if (_ItemTable != null)
+			{
+				Debug.Log("_ItemTable != null");
+
+				
+				_ItemTable.Draw(new Rect(m_DrawArea.width * 0.51f,22,m_DrawArea.width * 0.48f, m_DrawArea.height - 20));
+			}
+
 				
 			    
 
@@ -204,6 +246,8 @@ public class WindowTest : EditorWindow {
 		//GUILayout.Button("Or me",GUILayout.MaxWidth(100));
 
 		GUILayout.EndArea();
+		if (_inspector != null)
+				_inspector.Draw();
 
 
 

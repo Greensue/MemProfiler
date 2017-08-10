@@ -1,5 +1,5 @@
 using System;
-using Assets.Editor.Treemap;
+using Treemap;
 using UnityEditor;
 using UnityEngine;
 using UnityEditor.MemoryProfiler;
@@ -13,7 +13,7 @@ namespace MemoryProfilerWindow
 		ThingInMemory _selectedThing;
 		private ThingInMemory[] _shortestPath;
 		private ShortestPathToRootFinder _shortestPathToRootFinder;
-		private static int s_InspectorWidth = 400;
+		private static float s_InspectorWidth = PAEditorConst.InspectorWidth;
 		Vector2 _scrollPosition;
 		WindowTest _hostWindow;
 		CrawledMemorySnapshot _unpackedCrawl;

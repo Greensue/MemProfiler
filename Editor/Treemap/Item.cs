@@ -7,7 +7,7 @@ using Treemap;
 using UnityEditor.Graphs;
 using UnityEngine;
 
-namespace Assets.Editor.Treemap
+namespace Treemap
 {
 	public class Item : IComparable<Item>
 	{
@@ -17,14 +17,18 @@ namespace Assets.Editor.Treemap
 
 		public ThingInMemory _thingInMemory;
 
-		public int memorySize { get { return _thingInMemory.size; } }
-		public string name { get { return _thingInMemory.caption; } }
+		public float memorySize;
+		//{ get { return _thingInMemory.size; } }
+		public string name ;
+		//{ get { return _thingInMemory.caption; } }
 		public Color color { get { return _group.color; } }
 
 		public Item(ThingInMemory thingInMemory, Group group)
 		{
 			_thingInMemory = thingInMemory;
 			_group = group;
+			memorySize = _thingInMemory.size;
+			name = _thingInMemory.caption;
 		}
 
 		public int CompareTo(Item other)
