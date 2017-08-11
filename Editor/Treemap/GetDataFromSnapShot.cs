@@ -46,30 +46,51 @@ namespace Treemap
 			}
 		}
 
+		public void memoDate(ThingInMemory thing)
+		{
+			string groupName = GetGroupName(thing);
+					if (groupName.Length != 0)
+					{
+						if (!_groups.ContainsKey(groupName))
+						{
+							Group newGroup = new Group();
+							newGroup._name = groupName;
+							newGroup._items = new List<Item>();
+							_groups.Add(groupName, newGroup);
+						}
 
-		public void GetCompleteData()
+						Item item = new Item(thing, _groups[groupName]);
+						_items.Add(item);
+						_groups[groupName]._items.Add(item);
+
+					}
+						
+
+					
+		}
+
+
+
+		public void GetCompleteData(string searchString= "")
 		{
 			_items.Clear();
 			_groups.Clear();
 			_group0.Clear();
 
 			foreach (ThingInMemory thingInMemory in _unpackedCrawl.allObjects)
-			{
-				string groupName = GetGroupName(thingInMemory);
-				if (groupName.Length == 0)
-					continue;
-
-				if (!_groups.ContainsKey(groupName))
+			{ 
+				if(searchString!= "" && searchString != null)
 				{
-					Group newGroup = new Group();
-					newGroup._name = groupName;
-					newGroup._items = new List<Item>();
-					_groups.Add(groupName, newGroup);
+					if(!thingInMemory.caption.ToLower().Contains(searchString.ToLower()))
+					continue;
+					memoDate(thingInMemory);
+					
 				}
-
-				Item item = new Item(thingInMemory, _groups[groupName]);
-				_items.Add(item);
-				_groups[groupName]._items.Add(item);
+				else
+				{
+					memoDate(thingInMemory);
+				}
+				
 			}
 
 			foreach (Group group in _groups.Values)

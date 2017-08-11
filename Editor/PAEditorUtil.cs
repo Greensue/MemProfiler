@@ -15,7 +15,7 @@ public class PAEditorUtil
         if (fieldInfo == null)
         {
             return "";
-            Debug.Log("fieldInfo == null");
+            //Debug.Log("fieldInfo == null");
         }
 
         return fieldInfo.GetValue(obj);

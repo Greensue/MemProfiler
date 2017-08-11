@@ -27,8 +27,13 @@ public class WindowTest : EditorWindow {
 	[NonSerialized]
 	CrawledMemorySnapshot _unpackedCrawl;
 	public Inspector _inspector;
-	
+
+	public string _searchString= "";
+	public string _InsearchString= "";
 	private static bool m_MinimalGUI = false;
+	public bool TotoalMemoExist = false;
+
+	public float TotalMemory;
 	public int toolbarInt = 0;
 	//public TableViewDemoWindow instance = new TableViewDemoWindow();
 	private Rect m_DrawArea = new Rect(0, 20, 600, 400);
@@ -74,7 +79,7 @@ public class WindowTest : EditorWindow {
 		_gruopTable = new TableView(this, typeof(Group));
 
 		_gruopTable.AddColumn("_name", "Name", 0.4f, TextAnchor.MiddleLeft);
-		//_gruopTable.AddColumn("Count_A", "Count_A", 0.1f);
+		
 		_gruopTable.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
 		_gruopTable.AddColumn("_Size", "Size", 0.2f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
 		_gruopTable.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, PAEditorConst.PercentsFormatter);
@@ -84,6 +89,11 @@ public class WindowTest : EditorWindow {
 		_ItemTable.AddColumn("name", "Name", 0.5f, TextAnchor.MiddleLeft);
 		_ItemTable.AddColumn("memorySize", "Size", 0.5f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
 		_ItemTable.OnSelected += itemTabSelected;
+
+
+
+		_gruopTable.SetSortParams(2,true);
+		_ItemTable.SetSortParams(1,true);
 
 
 
@@ -131,9 +141,10 @@ public class WindowTest : EditorWindow {
         var itemObject = selected as Item;
         if (itemObject == null)
             return;
-        WindowTest window = (WindowTest)EditorWindow.GetWindow(typeof(WindowTest));
+        //WindowTest window = (WindowTest)EditorWindow.GetWindow(typeof(WindowTest));
 
-        window.SelectThing(itemObject._thingInMemory);
+        this.SelectThing(itemObject._thingInMemory);
+        Repaint();
 
 	}
 	
@@ -181,6 +192,11 @@ public class WindowTest : EditorWindow {
 			
 		}
 
+	public void Update()
+	{
+		
+	}
+
 
 
 	public void OnGUI()
@@ -198,19 +214,46 @@ public class WindowTest : EditorWindow {
 		GUILayout.BeginArea(m_DrawArea,background);
 		GUILayout.BeginVertical();
 			GUILayout.BeginHorizontal ();
-		   GUILayout.Label(string.Format("Total memory: 289MB"));
-			if (GUILayout.Button("Take Snapshot"))
+		   
+			if (GUILayout.Button("Take Snapshot",GUILayout.MinWidth(50),GUILayout.MaxWidth(100)))
 			{
 				UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
+				TotoalMemoExist = false;
 				
 			}
+
+
+			//searching box
+			string enteredString = GUILayout.TextField(_searchString, 100, "ToolbarSeachTextField", GUILayout.MinWidth(200),GUILayout.MaxWidth(300));
+			 if (enteredString != _searchString)
+            {
+                _searchString = enteredString;
+               // RefreshTables();
+            }
+            if (GUILayout.Button("", "ToolbarSeachCancelButton"))
+            {
+                _searchString = "";
+                GUI.FocusControl(null); // Remove focus if cleared
+                //RefreshTables();
+            }
+			if(TotoalMemoExist)
+			{
+				GUILayout.Label(string.Format("Total memory: {0}",PAEditorUtil.FormatBytes(TotalMemory)));
+
+			}
+			
 			GUILayout.EndHorizontal ();
 
-			
+			/*if(_gruopTable != null)
+			{
+				_gruopTable.Draw(new Rect(5, 22, m_DrawArea.width * 0.5f, m_DrawArea.height - 20));
+			}*/
 			if (_gruopTable != null&&_unpackedCrawl!=null)
 			{
 				GetDataFromSnapShot getDataFromSnapShot = new GetDataFromSnapShot(_unpackedCrawl);
-				getDataFromSnapShot.GetCompleteData();
+				getDataFromSnapShot.GetCompleteData(_searchString);
+				TotoalMemoExist = true;
+				TotalMemory = getDataFromSnapShot.MemTotalSize;
 				List<object> entries = new List<object>();
 				if (getDataFromSnapShot._group0 != null) 
 				{
@@ -220,15 +263,17 @@ public class WindowTest : EditorWindow {
 						entries.Add(gr);
 					}
 				}
-					//Debug.Log (entries.Count);
+					Debug.Log (entries[0]);
 					_gruopTable.RefreshData(entries);
+					//groupTabSelected(entries[0],2);
+					
 
 					_gruopTable.Draw(new Rect(5, 22, m_DrawArea.width * 0.5f, m_DrawArea.height - 20));
 
 			}
-			if (_ItemTable != null)
+			if (_ItemTable != null && _unpackedCrawl!=null)
 			{
-				Debug.Log("_ItemTable != null");
+				
 
 				
 				_ItemTable.Draw(new Rect(m_DrawArea.width * 0.51f,22,m_DrawArea.width * 0.48f, m_DrawArea.height - 20));
@@ -246,13 +291,25 @@ public class WindowTest : EditorWindow {
 		//GUILayout.Button("Or me",GUILayout.MaxWidth(100));
 
 		GUILayout.EndArea();
-		if (_inspector != null)
+		if (_inspector!=null && _unpackedCrawl!=null)
 				_inspector.Draw();
 
 
 
 
 	}
+
+
+	void OnDestroy()
+    {
+        if (_gruopTable != null)
+            _gruopTable.Dispose();
+        if (_ItemTable != null)
+            _ItemTable.Dispose();
+
+        _gruopTable = null;
+        _ItemTable = null;
+    }
 
 
 
