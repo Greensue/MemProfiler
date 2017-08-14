@@ -61,7 +61,14 @@ public partial class TableView : IDisposable
 
 
         m_specialTextColors = specialTextColors;
-        return m_lines[0];
+        if(m_lines.Count != 0)
+            return m_lines[0];
+
+        else
+        {
+            return null;
+        }
+
 
 
     }

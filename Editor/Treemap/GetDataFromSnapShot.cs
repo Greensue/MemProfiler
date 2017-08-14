@@ -89,14 +89,14 @@ namespace Treemap
 				
 				if(sizeString != "" && searchString == "")
 				{
-					if(!(thingInMemory.size/(1024*1024) >= Convert.ToSingle(sizeString)))
+					if(!(thingInMemory.size >= Convert.ToSingle(sizeString)*1024*1024))
 					continue;
 					memoDate(thingInMemory);
 				}
 
 				if(sizeString != "" && searchString != "")
 				{
-					if(!thingInMemory.caption.ToLower().Contains(searchString.ToLower()) || !(thingInMemory.size/(1024*1024) >= Convert.ToSingle(sizeString)))
+					if(!thingInMemory.caption.ToLower().Contains(searchString.ToLower()) || !(thingInMemory.size >= Convert.ToSingle(sizeString)*1024*1024))
 					continue;
 					memoDate(thingInMemory);
 

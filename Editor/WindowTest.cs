@@ -171,7 +171,13 @@ public class WindowTest : EditorWindow {
 				}
 			}
 
-			Group defaultGroup = _gruopTable.RefreshData(entries) as Group;
+			Group defaultGroup = new Group();
+
+			
+			defaultGroup = _gruopTable.RefreshData(entries) as Group;
+
+			
+
 
 				
 
@@ -180,6 +186,8 @@ public class WindowTest : EditorWindow {
 				if(_ItemTable != null)
 				{
 					List<object> items = new List<object>();
+					if(defaultGroup != null)
+					
 					foreach(Item item in defaultGroup._items)
 					{
 						items.Add(item);
@@ -248,10 +256,17 @@ public class WindowTest : EditorWindow {
             GUI.FocusControl(null); // Remove focus if cleared
             refreshTables();
         }
-        /*GUILayout.Label("Display Size > ");
-        _sizeString = GUILayout.TextField(_sizeString,25,GUILayout.MaxWidth(40));
-        refreshTables();
-        GUILayout.Label("mb");*/
+        GUILayout.Label("Display Size > ");
+        string enteredsizeString = GUILayout.TextField(_sizeString,25,GUILayout.MaxWidth(40));
+        
+    	if(_sizeString != enteredsizeString)
+    	{
+	    	_sizeString = enteredsizeString;
+	        refreshTables();
+
+    	}
+        
+        GUILayout.Label("mb");
 		if(TotoalMemoExist)
 		{
 			GUILayout.Label(string.Format("Total memory: {0}",PAEditorUtil.FormatBytes(TotalMemory)));
