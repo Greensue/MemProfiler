@@ -71,7 +71,7 @@ namespace Treemap
 
 
 
-		public void GetCompleteData(string searchString= "")
+		public void GetCompleteData(string searchString= "",string sizeString = "")
 		{
 			_items.Clear();
 			_groups.Clear();
@@ -79,17 +79,35 @@ namespace Treemap
 
 			foreach (ThingInMemory thingInMemory in _unpackedCrawl.allObjects)
 			{ 
-				if(searchString!= "" && searchString != null)
+				if(searchString!= "" && sizeString == "")
 				{
-					if(!thingInMemory.caption.ToLower().Contains(searchString.ToLower()))
+					if(!(thingInMemory.caption.ToLower().Contains(searchString.ToLower())))
 					continue;
 					memoDate(thingInMemory);
 					
 				}
-				else
+				
+				if(sizeString != "" && searchString == "")
 				{
+					if(!(thingInMemory.size/(1024*1024) >= Convert.ToSingle(sizeString)))
+					continue;
 					memoDate(thingInMemory);
 				}
+
+				if(sizeString != "" && searchString != "")
+				{
+					if(!thingInMemory.caption.ToLower().Contains(searchString.ToLower()) || !(thingInMemory.size/(1024*1024) >= Convert.ToSingle(sizeString)))
+					continue;
+					memoDate(thingInMemory);
+
+				}
+				if(searchString== "" && sizeString == "")
+				{
+					memoDate(thingInMemory);
+
+				}
+
+
 				
 			}
 
