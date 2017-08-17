@@ -14,11 +14,15 @@ namespace Treemap
    	    CrawledMemorySnapshot _unpackedCrawl;
    	    private float memTltalSize = 0.0f;
    	    private Dictionary<string, Group> _groups = new Dictionary<string, Group>();
-		private List<Item> _items = new List<Item>();
+		private Dictionary<string,Item> _items = new Dictionary<string,Item>();
 		public List<Group> _group0 = new List<Group>();
-		public GetDataFromSnapShot(CrawledMemorySnapshot _unpackedCrawl)
+		public string searchString;
+		public string sizeString;
+		public GetDataFromSnapShot(CrawledMemorySnapshot _unpackedCrawl,string searchString="",string sizeString="")
 		{
 			this._unpackedCrawl = _unpackedCrawl;
+			this.searchString = searchString;
+			this.sizeString = sizeString;
 		}
 
 		public float MemTotalSize
@@ -38,7 +42,7 @@ namespace Treemap
 				return _groups;
 			}
 		}
-		public List<Item> AllItems
+		public Dictionary<string,Item> AllItems
 		{
 			get
 			{
@@ -60,7 +64,11 @@ namespace Treemap
 						}
 
 						Item item = new Item(thing, _groups[groupName]);
-						_items.Add(item);
+						if(!_items.ContainsKey(item.name))
+						{
+							_items.Add(item.name,item);
+
+						}
 						_groups[groupName]._items.Add(item);
 
 					}
@@ -71,7 +79,7 @@ namespace Treemap
 
 
 
-		public void GetCompleteData(string searchString= "",string sizeString = "")
+		public void GetCompleteData()
 		{
 			_items.Clear();
 			_groups.Clear();
@@ -131,7 +139,7 @@ namespace Treemap
 			}
 
 
-			_items.Sort();
+			//_items.Sort();
 
 		}
 		
