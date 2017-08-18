@@ -22,6 +22,7 @@ namespace MemoryProfilerWindow
         private Texture2D _textureObject;
         private int _prevInstance;
         private float _textureSize = 128.0f;
+        
 
 
         static class Styles

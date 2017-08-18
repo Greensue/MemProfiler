@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System;
 using System.Reflection;
 
-public delegate void SelectionHandler(object selected, int col);
+public delegate void SelectionHandler(object selected, int col, string name);
 
 public partial class TableView : IDisposable 
 {
@@ -13,10 +13,11 @@ public partial class TableView : IDisposable
 
     public TableViewAppr Appearance { get { return _appearance; } }
 
-    public TableView(EditorWindow hostWindow, Type itemType)
+    public TableView(EditorWindow hostWindow, Type itemType, string name)
     {
         m_hostWindow = hostWindow;
         m_itemType = itemType;
+        this.name = name;
     }
 
     public void Dispose()
@@ -121,7 +122,7 @@ public partial class TableView : IDisposable
         m_selected = obj;
 
         if (OnSelected != null)
-            OnSelected(obj, 0);
+            OnSelected(obj, 0, name);
     }
 
     public object GetSelected()

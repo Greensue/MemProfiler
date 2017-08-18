@@ -72,7 +72,7 @@ public partial class TableView
             m_selectedCol = col;
             Debug.Log("selectionHappens && rect.Contains(Event.current.mousePosition)");
             if (OnSelected != null)
-                OnSelected(obj, col);
+                OnSelected(obj, col,name);
             m_hostWindow.Repaint();
         }
 
@@ -124,6 +124,7 @@ public partial class TableView
 
     int _sortSlot = 0;
     bool _descending = true;
+    string name="";
 
     Type m_itemType = null;
     EditorWindow m_hostWindow = null;

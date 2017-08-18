@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,9 +18,9 @@ namespace Treemap
 		private float diff1TltalSize = 0.0f;
 
 
-		List<Group> gruopIn0NotIn1 = new List<Group>();
-		List<Group> gruopIn1NotIn0 = new List<Group>();
-		List<Group> commonGroup = new List<Group>();
+		public List<Group> gruopIn0NotIn1 = new List<Group>();
+		public List<Group> gruopIn1NotIn0 = new List<Group>();
+		public List<Group> commonGroup = new List<Group>();
 
 		private Dictionary<string,Group> gruopDiff0= new Dictionary <string,Group>();
 		private Dictionary<string,Group> gruopDiff1= new Dictionary <string,Group>();
@@ -37,22 +37,25 @@ namespace Treemap
 
 		public CompareSnapshot(List<CrawledMemorySnapshot> snapshots,string searchString, string sizeString)
 		{
-			_snapshots = snapshots;
+			_unpackedsnapshots = snapshots;
 			_searchString = searchString;
 			_sizeString = sizeString;
 		}
 
 		public void Compare()
 		{
-			if(snapshots.Count>=2)
+			if(_unpackedsnapshots.Count>=2)
 			{
-				GetDataFromSnapShot _snapshot0 = new GetDataFromSnapShot(_snapshots[0],_searchString,_sizeString);
-				GetDataFromSnapShot _snapshot1 = new GetDataFromSnapShot(_snapshots[1],_searchString,_sizeString);
+Debug.Log("_unpackedsnapshots.Count"+_unpackedsnapshots.Count);
+				GetDataFromSnapShot _snapshot0 = new GetDataFromSnapShot(_unpackedsnapshots[0],_searchString,_sizeString);
+				GetDataFromSnapShot _snapshot1 = new GetDataFromSnapShot(_unpackedsnapshots[1],_searchString,_sizeString);
+				_snapshot0.GetCompleteData();
+				_snapshot1.GetCompleteData();
 
-
-				foreach(Item item in _snapshot0._items.values)
+Debug.Log ("love you  _snapshot0.AllItems.Count"+_snapshot0.AllItems.Count);
+				foreach(Item item in _snapshot0.AllItems.Values)
 				{
-					if (_snapshot1._items.ContainsKey(item.name))
+					if (_snapshot1.AllItems.ContainsKey(item.name))
 					{
 						if(!gruopCommon.ContainsKey(item._group._name))
 						{
@@ -68,7 +71,7 @@ namespace Treemap
 
 				}
 
-				foreach(Item item _snapshot0._items.values)
+				foreach(Item item in _snapshot0.AllItems.Values)
 				{
 					if(!itemsCommon.ContainsKey(item.name))
 					{
@@ -81,17 +84,17 @@ namespace Treemap
 							gruopDiff0.Add(newGroup._name,newGroup);
 						}
 						gruopDiff0[item._group._name]._items.Add(item);
-						itemsDiff0.Add(item.name,item);
+						
 					}
 				}
 
 
-				foreach(Item item _snapshot1._items.values)
+				foreach(Item item in _snapshot1.AllItems.Values)
 				{
 					if(!itemsCommon.ContainsKey(item.name))
 					{
 						itemsDiff1.Add(item.name,item);
-						if(!gruopDiff0.ContainsKey(item._group._name))
+						if(!gruopDiff1.ContainsKey(item._group._name))
 						{
 							Group newGroup = new Group();
 							newGroup._name = item._group._name;
@@ -99,16 +102,16 @@ namespace Treemap
 							gruopDiff1.Add(newGroup._name,newGroup);
 						}
 						gruopDiff1[item._group._name]._items.Add(item);
-						itemsDiff0.Add(item.name,item);
+						
 					}
 				}
 
-				}
+				
 
 				UpdateTheGruopInf(gruopDiff0,diff0TltalSize,gruopIn0NotIn1);
 				UpdateTheGruopInf(gruopDiff1,diff1TltalSize,gruopIn1NotIn0);
 				UpdateTheGruopInf(gruopCommon,commonTltalSize,commonGroup);
-			
+			}
 
 
 
@@ -142,36 +145,6 @@ namespace Treemap
 			}
 
 		}
-		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-		
-
-
-
-
-
-
-
-
-
-
-
 
 
 	}

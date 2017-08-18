@@ -18,6 +18,7 @@ namespace Treemap
 		public List<Group> _group0 = new List<Group>();
 		public string searchString;
 		public string sizeString;
+		public int snapshotNum= 0;
 		public GetDataFromSnapShot(CrawledMemorySnapshot _unpackedCrawl,string searchString="",string sizeString="")
 		{
 			this._unpackedCrawl = _unpackedCrawl;
@@ -62,7 +63,6 @@ namespace Treemap
 							newGroup._items = new List<Item>();
 							_groups.Add(groupName, newGroup);
 						}
-
 						Item item = new Item(thing, _groups[groupName]);
 						if(!_items.ContainsKey(item.name))
 						{
@@ -70,11 +70,8 @@ namespace Treemap
 
 						}
 						_groups[groupName]._items.Add(item);
-
 					}
-						
-
-					
+		
 		}
 
 

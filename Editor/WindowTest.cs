@@ -81,57 +81,35 @@ public class WindowTest : EditorWindow {
 
 
 	void Awake()
+	{		
+		InitialTable(ref _gruopTable,ref _ItemTable,"","_gruopTable","_gruopTable");	
+		InitialTable(ref commonGroupTable,ref commonItemTable,"(COMMON)","commonGroupTable","commonItemTable");		
+		InitialTable(ref diffGroupTable0,ref diffItemTable0,"(SPECIAL IN0)","diffGroupTable0","diffItemTable0");
+		InitialTable(ref diffGroupTable1,ref diffItemTable1,"(SPECIAL IN1)","diffGroupTable1","diffItemTable1");
+
+	}
+
+	void InitialTable(ref TableView grouptab, ref TableView itemTab,string model,string G_name,string I_name)
 	{
+		grouptab = new TableView(this,typeof(Group),G_name);
+		grouptab.AddColumn("_name", model+"Name", 0.4f, TextAnchor.MiddleLeft);	
+		grouptab.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
+		grouptab.AddColumn("_Size", "Size", 0.2f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
+		grouptab.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, PAEditorConst.PercentsFormatter);
+		grouptab.SetSortParams(2,true);
+		itemTab = new TableView(this, typeof(Item),I_name);
+		itemTab.AddColumn("name", "Name", 0.7f, TextAnchor.MiddleLeft);
+		itemTab.AddColumn("memorySize", "Size", 0.3f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
+		itemTab.SetSortParams(1,true);
+		grouptab.OnSelected += groupTabSelected;
+		itemTab.OnSelected += itemTabSelected;
 		
-		_gruopTable = new TableView(this, typeof(Group));
-		_gruopTable.AddColumn("_name", "Name", 0.4f, TextAnchor.MiddleLeft);	
-		_gruopTable.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
-		_gruopTable.AddColumn("_Size", "Size", 0.2f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
-		_gruopTable.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, PAEditorConst.PercentsFormatter);
-		_gruopTable.OnSelected += groupTabSelected;
-
-
-
-		_ItemTable = new TableView(this, typeof(Item));
-		_ItemTable.AddColumn("name", "Name", 0.7f, TextAnchor.MiddleLeft);
-		_ItemTable.AddColumn("memorySize", "Size", 0.3f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
-		_ItemTable.OnSelected += itemTabSelected;
-
-
-		commonGroupTable = new TableView(this,typeof(Group));
-		commonGroupTable.AddColumn("_name", "(COMMON) Name", 0.4f, TextAnchor.MiddleLeft);	
-		commonGroupTable.AddColumn("_membCount", "MemCount", 0.2f, TextAnchor.MiddleCenter, "0.000");
-		commonGroupTable.AddColumn("_Size", "Size", 0.2f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
-		commonGroupTable.AddColumn("_Percent", "Percent", 0.2f, TextAnchor.MiddleCenter, PAEditorConst.PercentsFormatter);
-		commonGroupTable.OnSelected += commonGroupTableSelected;
-
-
-		
-		commonItemTable = new TableView(this, typeof(Item));
-		commonItemTable.AddColumn("name", "Name", 0.7f, TextAnchor.MiddleLeft);
-		commonItemTable.AddColumn("memorySize", "Size", 0.3f,TextAnchor.MiddleCenter,PAEditorConst.BytesFormatter);
-		commonItemTable.OnSelected += commomItemTabSelected;
-
-
-
-
-
-
-
-
-
-
-		_gruopTable.SetSortParams(2,true);
-		commonGroupTable.SetSortParams(2,true);
-		_ItemTable.SetSortParams(1,true);
-
-
 
 	}
 
 
 
-	void commonGroupTableSelected(object selected, int col)
+	/*void commonGroupTableSelected(object selected, int col)
 	{
 		Group gr = selected as Group;
 		if(gr == null)
@@ -146,7 +124,7 @@ public class WindowTest : EditorWindow {
 		}
 
 		commonGroupTable.RefreshData(itemEntries);
-	}
+	}*/
 
 
 
@@ -186,7 +164,7 @@ public class WindowTest : EditorWindow {
 	}
 
 
-	void groupTabSelected(object selected, int col)
+	void groupTabSelected(object selected, int col,string _name)
 	{
 		Group gr = selected as Group;
 		if(gr == null)
@@ -199,14 +177,34 @@ public class WindowTest : EditorWindow {
 		{
 			itemEntries.Add(item);
 		}
+		if(_name.Equals("_gruopTable"))
+		{
+			_ItemTable.RefreshData(itemEntries);
 
-		_ItemTable.RefreshData(itemEntries);
+		}
+		if(_name.Equals("commonItemTable"))
+		{
+			commonItemTable.RefreshData(itemEntries);
+
+		}
+		if(_name.Equals("diffGroupTable0"))
+		{
+			diffItemTable0.RefreshData(itemEntries);
+
+		}
+		if(_name.Equals("diffGroupTable1"))
+		{
+			diffItemTable1.RefreshData(itemEntries);
+
+		}
+
+
 
 
 	}
 
 
-	void itemTabSelected(object selected, int col)
+	void itemTabSelected(object selected, int col,string s)
 	{
 
         var itemObject = selected as Item;
@@ -217,7 +215,7 @@ public class WindowTest : EditorWindow {
         Repaint();
 
 	}
-	void commomItemTabSelected(object selected, int col)
+	/*void commomItemTabSelected(object selected, int col)
 	{
 
         var itemObject = selected as Item;
@@ -227,7 +225,7 @@ public class WindowTest : EditorWindow {
         this.SelectThing(itemObject._thingInMemory);
         Repaint();
 
-	}
+	}*/
 	
 	
 
@@ -244,6 +242,7 @@ public class WindowTest : EditorWindow {
 		_inspector = new Inspector(this, _unpackedCrawl, _snapshot);
 
 		unpackedsnapshots.Add("NewSnapshot"+snapshotNum,_unpackedCrawl);
+		snapshotNum++;
 		listUnpcakSnapshots.Add(_unpackedCrawl);
 		listCompareInspectors.Add(_inspector);
 		refreshTables();
@@ -298,23 +297,26 @@ public class WindowTest : EditorWindow {
 
 	public void compareRefreshTables()
 	{
+		Debug.Log ("love you"+listUnpcakSnapshots.Count);
 		CompareSnapshot _compareSnapshot = new CompareSnapshot(listUnpcakSnapshots, _compareSearchString, _compareSizeString);
 		_compareSnapshot.Compare();
-		if(commonGroupTable != null)
+		Debug.Log ("love you"+_compareSnapshot.commonGroup.Count);
+		
+		/*if(diffGroupTable0 != null)
 		{
 			List<object> entries = new List<object>();
-			if (_compareSnapshot.commonGroup != null) 
+			if (_compareSnapshot.gruopIn0NotIn1 != null) 
 			{
 				//Debug.Log ("getDataFromSnapShot != null"); 
-				foreach(Group gr in _compareSnapshot.commonGroup)
+				foreach(Group gr in _compareSnapshot.gruopIn0NotIn1)
 				{
 					entries.Add(gr);
 				}
 			}
 
 			Group defaultGroup = new Group();
-			defaultGroup = commonGroupTable.RefreshData(entries) as Group;
-			if(commonItemTable!= null)
+			defaultGroup = diffGroupTable0.RefreshData(entries) as Group;
+			if(diffItemTable0!= null)
 			{
 				List<object> items = new List<object>();
 				if(defaultGroup != null)
@@ -324,12 +326,80 @@ public class WindowTest : EditorWindow {
 					items.Add(item);
 				}
 
-				commonItemTable.RefreshData(items);
+				diffItemTable0.RefreshData(items);
 			}
 		}
 
+		if(diffGroupTable1 != null)
+		{
+			List<object> entries = new List<object>();
+			if (_compareSnapshot.gruopIn1NotIn0 != null) 
+			{
+				//Debug.Log ("getDataFromSnapShot != null"); 
+				foreach(Group gr in _compareSnapshot.gruopIn1NotIn0)
+				{
+					entries.Add(gr);
+				}
+			}
+
+			Group defaultGroup = new Group();
+			defaultGroup = diffGroupTable1.RefreshData(entries) as Group;
+			if(diffItemTable1!= null)
+			{
+				List<object> items = new List<object>();
+				if(defaultGroup != null)
+				
+				foreach(Item item in defaultGroup._items)
+				{
+					items.Add(item);
+				}
+
+				diffItemTable1.RefreshData(items);
+			}
+		}*/
+		Refesh(commonGroupTable,commonItemTable,_compareSnapshot.commonGroup);
+		Refesh(diffGroupTable0,diffItemTable0,_compareSnapshot.gruopIn0NotIn1);
+		Refesh(diffGroupTable1,diffItemTable1,_compareSnapshot.gruopIn1NotIn0); 
 
 	}
+
+
+	public void Refesh(TableView grupTab,TableView itemTab,List<Group> m_group)
+	{
+		if(grupTab != null)
+		{
+			List<object> entries = new List<object>();
+			if (m_group != null) 
+			{
+				//Debug.Log ("getDataFromSnapShot != null"); 
+				foreach(Group gr in m_group)
+				{
+					entries.Add(gr);
+				}
+			}
+
+			Group defaultGroup = new Group();
+			defaultGroup = grupTab.RefreshData(entries) as Group;
+			if(itemTab!= null)
+			{
+				List<object> items = new List<object>();
+				if(defaultGroup != null)
+				
+				foreach(Item item in defaultGroup._items)
+				{
+					items.Add(item);
+				}
+
+				itemTab.RefreshData(items);
+			}
+		}
+
+	}
+
+
+
+
+
 
 
 
@@ -339,10 +409,7 @@ public class WindowTest : EditorWindow {
 		
 	}
 
-	public void Update()
-	{
-		
-	}
+	
 
 
 
@@ -367,9 +434,7 @@ public class WindowTest : EditorWindow {
 
 	public void drawSnapshotCompare()
 	{
-		
-		
-		
+		CompareInitial();
 		GUIStyle background = "AnimationCurveEditorBackground";
 		_compareDrawArea.width = this.position.width - PAEditorConst.InspectorWidth;
 		_compareDrawArea.height = this.position.height;
@@ -398,7 +463,7 @@ public class WindowTest : EditorWindow {
         GUILayout.Space(20);
         GUILayout.Label("Display Size >");
 
-        string enteredsizeString = GUILayout.TextField(_sizeString,100,GUILayout.MaxWidth(40));
+        string enteredsizeString = GUILayout.TextField(_compareSizeString,100,GUILayout.MaxWidth(40));
         GUILayout.Label("mb ");
 
         if(_compareSizeString != enteredsizeString)
@@ -416,6 +481,23 @@ public class WindowTest : EditorWindow {
 		{
 			commonItemTable.Draw(new Rect(_compareDrawArea.width * 0.51f,22,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
 		}
+
+		if(diffGroupTable0 != null )
+		diffGroupTable0.Draw(new Rect(5, _compareDrawArea.height*0.31f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+
+		if (diffItemTable0 != null )
+		{
+			diffItemTable0.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.31f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
+		}
+
+		if(diffGroupTable1 != null )
+		diffGroupTable1.Draw(new Rect(5, _compareDrawArea.height*0.62f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+
+		if (diffItemTable1 != null )
+		{
+			diffItemTable1.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.62f,_compareDrawArea.width * 0.48f, _compareDrawArea.height-20));
+		}
+
 
 		
 		GUILayout.EndVertical();
