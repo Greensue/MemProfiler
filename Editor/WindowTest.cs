@@ -19,6 +19,7 @@ public class WindowTest : EditorWindow {
 	[NonSerialized]
 	private bool _registered = false;
 	private bool _compareRegistered = false;
+	private GUISkin myskin;
 	[NonSerialized]
 	UnityEditor.MemoryProfiler.PackedMemorySnapshot _snapshot;
 	private Dictionary<string,UnityEditor.MemoryProfiler.PackedMemorySnapshot> _snapshots = new Dictionary<string,UnityEditor.MemoryProfiler.PackedMemorySnapshot>();
@@ -26,15 +27,16 @@ public class WindowTest : EditorWindow {
 	[SerializeField]
 	PackedCrawlerData _packedCrawled;
 
-	[NonSerialized]
-	CrawledMemorySnapshot _unpackedCrawl;
+	//[NonSerialized]
+	static CrawledMemorySnapshot _unpackedCrawl;
 
 
 	Dictionary<string,Inspector> compareInspectors = new Dictionary<string,Inspector>();
 	List<Inspector> listCompareInspectors = new List<Inspector>();
 
-
-	Dictionary<string,CrawledMemorySnapshot> unpackedsnapshots = new Dictionary<string,CrawledMemorySnapshot>();
+	Dictionary<string,CrawledMemorySnapshot> activeUnpackedsnapshots = new Dictionary<string,CrawledMemorySnapshot>();
+	static Dictionary<string,CrawledMemorySnapshot> unpackedsnapshots = new Dictionary<string,CrawledMemorySnapshot>();
+	static string SanpName;
 	List<CrawledMemorySnapshot> listUnpcakSnapshots = new List<CrawledMemorySnapshot>();
 	public Inspector _inspector;
 	public string _searchString= "";
@@ -45,7 +47,7 @@ public class WindowTest : EditorWindow {
 	private static bool m_MinimalGUI = false;
 	public bool TotoalMemoExist = false;
 	public bool guiEnable;
-	public int snapshotNum=0;
+	
 
 	public float TotalMemory;
 	public int toolbarInt = 0;
@@ -88,6 +90,11 @@ public class WindowTest : EditorWindow {
 		InitialTable(ref diffGroupTable1,ref diffItemTable1,"(SPECIAL IN1)","diffGroupTable1","diffItemTable1");
 
 	}
+	void OnEnable()
+     {
+     	 myskin = (GUISkin)Resources.Load("Myskin");
+     
+     }
 
 	void InitialTable(ref TableView grouptab, ref TableView itemTab,string model,string G_name,string I_name)
 	{
@@ -240,14 +247,52 @@ public class WindowTest : EditorWindow {
 	{
 		_unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
 		_inspector = new Inspector(this, _unpackedCrawl, _snapshot);
+		DialogWindow _window = new DialogWindow();
+		_window = (DialogWindow)EditorWindow.GetWindow(typeof(DialogWindow));
+	    _window.ShowUtility();
 
-		unpackedsnapshots.Add("NewSnapshot"+snapshotNum,_unpackedCrawl);
-		snapshotNum++;
-		listUnpcakSnapshots.Add(_unpackedCrawl);
+		
+		
+		//listUnpcakSnapshots.Add(_unpackedCrawl);
 		listCompareInspectors.Add(_inspector);
 		refreshTables();
-		compareRefreshTables();
+		//compareRefreshTables();
 	}
+
+	public class DialogWindow : EditorWindow
+	 {
+	     public string myString;
+	     
+	     void OnGUI()
+	     {
+	         
+	         myString = EditorGUILayout.TextField ("Text Field", myString);
+	         if(GUILayout.Button("OK",GUILayout.MaxWidth(100))|| Input.GetKeyDown(KeyCode.Return))
+	         {
+	         	SanpName = myString;
+	         	if(unpackedsnapshots!=null && SanpName!= null)
+	         	{
+ 			        if(!unpackedsnapshots.ContainsKey(SanpName))
+	         			unpackedsnapshots.Add(SanpName,_unpackedCrawl);
+	         		else
+	         		{
+        				ShowNotification(new GUIContent(SanpName+" is already exist, please try another name!"));
+	         			Debug.LogWarningFormat(" '{0}' is already exist, please try another name!", SanpName);
+	         		}
+
+	         	}
+	         	else
+	         	{
+	         		Debug.LogWarningFormat("the snapshot name could not be empty!");
+	         		ShowNotification(new GUIContent("the snapshot name could not be empty!"));
+	         	}
+	         	Close();
+
+	         }
+	         
+	         
+	     }
+	 }
 
 
 
@@ -302,61 +347,7 @@ public class WindowTest : EditorWindow {
 		_compareSnapshot.Compare();
 		Debug.Log ("love you"+_compareSnapshot.commonGroup.Count);
 		
-		/*if(diffGroupTable0 != null)
-		{
-			List<object> entries = new List<object>();
-			if (_compareSnapshot.gruopIn0NotIn1 != null) 
-			{
-				//Debug.Log ("getDataFromSnapShot != null"); 
-				foreach(Group gr in _compareSnapshot.gruopIn0NotIn1)
-				{
-					entries.Add(gr);
-				}
-			}
-
-			Group defaultGroup = new Group();
-			defaultGroup = diffGroupTable0.RefreshData(entries) as Group;
-			if(diffItemTable0!= null)
-			{
-				List<object> items = new List<object>();
-				if(defaultGroup != null)
-				
-				foreach(Item item in defaultGroup._items)
-				{
-					items.Add(item);
-				}
-
-				diffItemTable0.RefreshData(items);
-			}
-		}
-
-		if(diffGroupTable1 != null)
-		{
-			List<object> entries = new List<object>();
-			if (_compareSnapshot.gruopIn1NotIn0 != null) 
-			{
-				//Debug.Log ("getDataFromSnapShot != null"); 
-				foreach(Group gr in _compareSnapshot.gruopIn1NotIn0)
-				{
-					entries.Add(gr);
-				}
-			}
-
-			Group defaultGroup = new Group();
-			defaultGroup = diffGroupTable1.RefreshData(entries) as Group;
-			if(diffItemTable1!= null)
-			{
-				List<object> items = new List<object>();
-				if(defaultGroup != null)
-				
-				foreach(Item item in defaultGroup._items)
-				{
-					items.Add(item);
-				}
-
-				diffItemTable1.RefreshData(items);
-			}
-		}*/
+		
 		Refesh(commonGroupTable,commonItemTable,_compareSnapshot.commonGroup);
 		Refesh(diffGroupTable0,diffItemTable0,_compareSnapshot.gruopIn0NotIn1);
 		Refesh(diffGroupTable1,diffItemTable1,_compareSnapshot.gruopIn1NotIn0); 
@@ -432,84 +423,7 @@ public class WindowTest : EditorWindow {
 
 	}
 
-	public void drawSnapshotCompare()
-	{
-		CompareInitial();
-		GUIStyle background = "AnimationCurveEditorBackground";
-		_compareDrawArea.width = this.position.width - PAEditorConst.InspectorWidth;
-		_compareDrawArea.height = this.position.height;
-		GUILayout.BeginArea(_compareDrawArea,background);
-		GUILayout.BeginVertical();
-		GUILayout.BeginHorizontal ("Toolbar");
-		if(GUILayout.Button("Take Snapshot",EditorStyles.toolbarButton))
-		{
-			//snapshots.Add();
-			UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
-
-		}
-
-		string enteredString = GUILayout.TextField(_compareSearchString, 100, "ToolbarSeachTextField", GUILayout.MinWidth(200),GUILayout.MaxWidth(300));
-		 if (enteredString != _compareSearchString)
-        {
-            _compareSearchString = enteredString;
-           compareRefreshTables();
-        }
-        if (GUILayout.Button("", "ToolbarSeachCancelButton"))
-        {
-            _compareSearchString = "";
-            GUI.FocusControl(null); // Remove focus if cleared
-            compareRefreshTables();
-        }
-        GUILayout.Space(20);
-        GUILayout.Label("Display Size >");
-
-        string enteredsizeString = GUILayout.TextField(_compareSizeString,100,GUILayout.MaxWidth(40));
-        GUILayout.Label("mb ");
-
-        if(_compareSizeString != enteredsizeString)
-    	{
-	    	_compareSizeString = enteredsizeString;
-	        compareRefreshTables();
-    	}
-    	GUILayout.Space(30);
-		GUILayout.EndHorizontal();
-
-		if(commonGroupTable != null )
-		commonGroupTable.Draw(new Rect(5, 22, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
-
-		if (commonItemTable != null )
-		{
-			commonItemTable.Draw(new Rect(_compareDrawArea.width * 0.51f,22,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
-		}
-
-		if(diffGroupTable0 != null )
-		diffGroupTable0.Draw(new Rect(5, _compareDrawArea.height*0.31f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
-
-		if (diffItemTable0 != null )
-		{
-			diffItemTable0.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.31f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
-		}
-
-		if(diffGroupTable1 != null )
-		diffGroupTable1.Draw(new Rect(5, _compareDrawArea.height*0.62f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
-
-		if (diffItemTable1 != null )
-		{
-			diffItemTable1.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.62f,_compareDrawArea.width * 0.48f, _compareDrawArea.height-20));
-		}
-
-
-		
-		GUILayout.EndVertical();
-		GUILayout.EndArea();
-		if (_inspector!=null && _unpackedCrawl!=null)
-				_inspector.Draw();
-
-
-
 	
-
-	}
 
 
 	public void drawSnapshotDisplay()
@@ -593,8 +507,155 @@ public class WindowTest : EditorWindow {
         _gruopTable = null;
         _ItemTable = null;
     }
+    public void drawSnapshotCompare()
+	{
+		CompareInitial();
+		GUIStyle background = "AnimationCurveEditorBackground";
 
 
+
+
+		_compareDrawArea.width = this.position.width - PAEditorConst.InspectorWidth;
+
+
+
+
+		_compareDrawArea.height = this.position.height;
+		GUILayout.BeginArea(_compareDrawArea,background);
+		GUILayout.BeginVertical();
+		GUILayout.BeginHorizontal ("Toolbar");
+		if(GUILayout.Button("Take Snapshot",EditorStyles.toolbarButton))
+		{
+			//snapshots.Add();
+			UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
+			/*DialogWindow window = (DialogWindow)EditorWindow.GetWindow(typeof(DialogWindow));
+        	window.Show();*/
+        	
+
+		}
+		if(GUILayout.Button("Remove",EditorStyles.toolbarButton))
+		{
+			foreach(string st in activeUnpackedsnapshots.Keys)
+         	{
+         		unpackedsnapshots.Remove(st);
+         	}
+
+
+		}
+		if(GUILayout.Button("Compare",EditorStyles.toolbarButton))
+		{
+
+		}
+
+
+		string enteredString = GUILayout.TextField(_compareSearchString, 100, "ToolbarSeachTextField", GUILayout.MinWidth(200),GUILayout.MaxWidth(300));
+		 if (enteredString != _compareSearchString)
+        {
+            _compareSearchString = enteredString;
+           compareRefreshTables();
+        }
+        if (GUILayout.Button("", "ToolbarSeachCancelButton"))
+        {
+            _compareSearchString = "";
+            GUI.FocusControl(null); // Remove focus if cleared
+            compareRefreshTables();
+        }
+        GUILayout.Space(20);
+        GUILayout.Label("Display Size >");
+
+        string enteredsizeString = GUILayout.TextField(_compareSizeString,100,GUILayout.MaxWidth(40));
+        GUILayout.Label("mb ");
+
+        if(_compareSizeString != enteredsizeString)
+    	{
+	    	_compareSizeString = enteredsizeString;
+	        compareRefreshTables();
+    	}
+    	GUILayout.Space(30);
+		GUILayout.EndHorizontal();
+		GUILayout.BeginHorizontal();
+		foreach(string st in unpackedsnapshots.Keys)
+        {
+         	GUIStyle _buttonStyle = new GUIStyle();
+         	if(!activeUnpackedsnapshots.ContainsKey(st))
+	        {
+	         	_buttonStyle = GUI.skin.button;
+
+	        }
+	        else
+	        {
+	        	_buttonStyle = myskin.button;
+	        }
+
+
+         	if(GUILayout.Button(st,_buttonStyle,GUILayout.MaxWidth(100)))
+	        {
+	        	if(!activeUnpackedsnapshots.ContainsKey(st))
+	        	{
+		        	activeUnpackedsnapshots.Add(st,unpackedsnapshots[st]);
+		        	
+	        	}
+	        	else
+	        	{
+	        		activeUnpackedsnapshots.Remove(st);
+	        	}
+
+	        }
+        }
+
+
+
+
+
+
+		GUILayout.EndHorizontal();
+
+		
+
+
+
+
+
+
+        float f = 100f;
+		if(commonGroupTable != null )
+		commonGroupTable.Draw(new Rect(5,f , _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+
+		if (commonItemTable != null )
+		{
+			commonItemTable.Draw(new Rect(_compareDrawArea.width * 0.51f,f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
+		}
+
+		if(diffGroupTable0 != null )
+		diffGroupTable0.Draw(new Rect(5, _compareDrawArea.height*0.31f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+
+		if (diffItemTable0 != null )
+		{
+			diffItemTable0.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.31f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
+		}
+
+		if(diffGroupTable1 != null )
+		diffGroupTable1.Draw(new Rect(5, _compareDrawArea.height*0.62f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+
+		if (diffItemTable1 != null )
+		{
+			diffItemTable1.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.62f,_compareDrawArea.width * 0.48f, _compareDrawArea.height-20));
+		}
+
+
+		
+		GUILayout.EndVertical();
+		GUILayout.EndArea();
+		if (_inspector!=null && _unpackedCrawl!=null)
+				_inspector.Draw();
+
+
+
+	
+
+	}
+
+	
 
 
 
