@@ -13,23 +13,22 @@ namespace Treemap
 		string _searchString;
 		string _sizeString;
 
-		private float commonTltalSize = 0.0f;
-		private float diff0TltalSize = 0.0f;
-		private float diff1TltalSize = 0.0f;
-
-
 		public List<Group> gruopIn0NotIn1 = new List<Group>();
 		public List<Group> gruopIn1NotIn0 = new List<Group>();
 		public List<Group> commonGroup = new List<Group>();
+		public List<Group> moreCommonGroup = new List<Group>();
 
 		private Dictionary<string,Group> gruopDiff0= new Dictionary <string,Group>();
 		private Dictionary<string,Group> gruopDiff1= new Dictionary <string,Group>();
 		private Dictionary<string,Group> gruopCommon= new Dictionary <string,Group>();
 
+		private Dictionary<string,Group> moreGroup = new Dictionary <string,Group>();
+
 
 		private Dictionary<string,Item> itemsDiff0= new Dictionary <string,Item>();
 		private Dictionary<string,Item> itemsDiff1= new Dictionary <string,Item>();
 		private Dictionary<string,Item> itemsCommon= new Dictionary <string,Item>();
+		private Dictionary<string,Item> moreItems= new Dictionary <string,Item>();
 
 
 
@@ -44,7 +43,7 @@ namespace Treemap
 
 		public void Compare()
 		{
-			if(_unpackedsnapshots.Count>=2)
+			if(_unpackedsnapshots.Count==2)
 			{
 Debug.Log("_unpackedsnapshots.Count"+_unpackedsnapshots.Count);
 				GetDataFromSnapShot _snapshot0 = new GetDataFromSnapShot(_unpackedsnapshots[0],_searchString,_sizeString);
@@ -108,9 +107,49 @@ Debug.Log ("love you  _snapshot0.AllItems.Count"+_snapshot0.AllItems.Count);
 
 				
 
-				UpdateTheGruopInf(gruopDiff0,diff0TltalSize,gruopIn0NotIn1);
-				UpdateTheGruopInf(gruopDiff1,diff1TltalSize,gruopIn1NotIn0);
-				UpdateTheGruopInf(gruopCommon,commonTltalSize,commonGroup);
+				UpdateTheGruopInf(gruopDiff0,gruopIn0NotIn1);
+				UpdateTheGruopInf(gruopDiff1,gruopIn1NotIn0);
+				UpdateTheGruopInf(gruopCommon,commonGroup);
+			}
+			if(_unpackedsnapshots.Count>2)
+			{
+				int snapshotNum = _unpackedsnapshots.Count;
+				GetDataFromSnapShot []  dataArray = new GetDataFromSnapShot[snapshotNum];
+				for(int i=0; i<snapshotNum; i++)
+				{
+					dataArray[i] = new GetDataFromSnapShot(_unpackedsnapshots[i],_searchString,_sizeString);
+					dataArray[i].GetCompleteData();
+				}
+				moreItems = dataArray[0].AllItems;
+
+
+
+				for(int i=0; i<snapshotNum && moreItems.Count>= 0; i++)
+				{
+					compareItems(moreItems,dataArray[i].AllItems);
+				}
+
+
+				foreach(Item item in moreItems.Values)
+				{
+				
+					if(!moreGroup.ContainsKey(item._group._name))
+					{
+						Group newGroup = new Group();
+						newGroup._name = item._group._name;
+						newGroup._items = new List<Item>();
+						moreGroup.Add(newGroup._name,newGroup);
+					}
+					moreGroup[item._group._name]._items.Add(item);	
+
+				}
+				UpdateTheGruopInf(moreGroup,moreCommonGroup);
+
+					
+
+
+
+					
 			}
 
 
@@ -120,11 +159,23 @@ Debug.Log ("love you  _snapshot0.AllItems.Count"+_snapshot0.AllItems.Count);
 
 
 		}
-
-
-
-		void UpdateTheGruopInf(Dictionary<string,Group> _groups,float memTltalSize,List<Group> gruopIn)
+		void compareItems(Dictionary<string,Item> Items0, Dictionary<string,Item> Items1)
 		{
+			foreach(string ite in Items0.Keys)
+			{
+				if(!Items1.ContainsKey(ite))
+				{
+					Items0.Remove(ite);
+				}
+			}
+
+		}
+
+
+
+		void UpdateTheGruopInf(Dictionary<string,Group> _groups,List<Group> gruopIn)
+		{
+			float memTltalSize = 0f;
 			foreach (Group group in _groups.Values)
 			{
 				group._items.Sort();

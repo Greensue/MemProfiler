@@ -19,6 +19,7 @@ public class WindowTest : EditorWindow {
 	[NonSerialized]
 	private bool _registered = false;
 	private bool _compareRegistered = false;
+	private bool _compare = false;
 	private GUISkin myskin;
 	[NonSerialized]
 	UnityEditor.MemoryProfiler.PackedMemorySnapshot _snapshot;
@@ -67,6 +68,9 @@ public class WindowTest : EditorWindow {
 	public TableView diffGroupTable1;
 	public TableView diffItemTable1;
 
+	public TableView moreGruopTab;
+	public TableView moreItemTab;
+
 
 	[MenuItem("Window/ProfilerTest")]
     public static void Init()
@@ -88,6 +92,7 @@ public class WindowTest : EditorWindow {
 		InitialTable(ref commonGroupTable,ref commonItemTable,"(COMMON)","commonGroupTable","commonItemTable");		
 		InitialTable(ref diffGroupTable0,ref diffItemTable0,"(SPECIAL IN0)","diffGroupTable0","diffItemTable0");
 		InitialTable(ref diffGroupTable1,ref diffItemTable1,"(SPECIAL IN1)","diffGroupTable1","diffItemTable1");
+		InitialTable(ref moreGruopTab,ref moreItemTab,"(COMMON)","moreThan2Guop","moreThan2Item");
 
 	}
 	void OnEnable()
@@ -247,9 +252,13 @@ public class WindowTest : EditorWindow {
 	{
 		_unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
 		_inspector = new Inspector(this, _unpackedCrawl, _snapshot);
-		DialogWindow _window = new DialogWindow();
-		_window = (DialogWindow)EditorWindow.GetWindow(typeof(DialogWindow));
-	    _window.ShowUtility();
+		if(toolbarInt == 1)
+		{
+			DialogWindow _window = new DialogWindow();
+			_window = (DialogWindow)EditorWindow.GetWindow(typeof(DialogWindow));
+		    _window.ShowUtility();
+		}
+		
 
 		
 		
@@ -342,6 +351,12 @@ public class WindowTest : EditorWindow {
 
 	public void compareRefreshTables()
 	{
+		listUnpcakSnapshots.Clear();
+		foreach(string snapKey in activeUnpackedsnapshots.Keys)
+		{
+			listUnpcakSnapshots.Add(activeUnpackedsnapshots[snapKey]);
+
+		}
 		Debug.Log ("love you"+listUnpcakSnapshots.Count);
 		CompareSnapshot _compareSnapshot = new CompareSnapshot(listUnpcakSnapshots, _compareSearchString, _compareSizeString);
 		_compareSnapshot.Compare();
@@ -351,6 +366,7 @@ public class WindowTest : EditorWindow {
 		Refesh(commonGroupTable,commonItemTable,_compareSnapshot.commonGroup);
 		Refesh(diffGroupTable0,diffItemTable0,_compareSnapshot.gruopIn0NotIn1);
 		Refesh(diffGroupTable1,diffItemTable1,_compareSnapshot.gruopIn1NotIn0); 
+		Refesh(moreGruopTab,moreItemTab,_compareSnapshot.moreCommonGroup);
 
 	}
 
@@ -506,6 +522,9 @@ public class WindowTest : EditorWindow {
 
         _gruopTable = null;
         _ItemTable = null;
+        _unpackedCrawl = null;
+        unpackedsnapshots.Clear();
+        SanpName = null;
     }
     public void drawSnapshotCompare()
 	{
@@ -526,11 +545,7 @@ public class WindowTest : EditorWindow {
 		GUILayout.BeginHorizontal ("Toolbar");
 		if(GUILayout.Button("Take Snapshot",EditorStyles.toolbarButton))
 		{
-			//snapshots.Add();
 			UnityEditor.MemoryProfiler.MemorySnapshot.RequestNewSnapshot();
-			/*DialogWindow window = (DialogWindow)EditorWindow.GetWindow(typeof(DialogWindow));
-        	window.Show();*/
-        	
 
 		}
 		if(GUILayout.Button("Remove",EditorStyles.toolbarButton))
@@ -540,10 +555,14 @@ public class WindowTest : EditorWindow {
          		unpackedsnapshots.Remove(st);
          	}
 
+         	activeUnpackedsnapshots.Clear();
+
 
 		}
 		if(GUILayout.Button("Compare",EditorStyles.toolbarButton))
 		{
+			compareRefreshTables();
+			_compare = true;
 
 		}
 
@@ -617,30 +636,47 @@ public class WindowTest : EditorWindow {
 
 
 
-        float f = 100f;
-		if(commonGroupTable != null )
-		commonGroupTable.Draw(new Rect(5,f , _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+        
+        if(_compare && activeUnpackedsnapshots.Count == 2)
+        {
+        	float f = 50f;
+        	if(commonGroupTable != null )
+			commonGroupTable.Draw(new Rect(5,f , _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
 
-		if (commonItemTable != null )
-		{
-			commonItemTable.Draw(new Rect(_compareDrawArea.width * 0.51f,f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
-		}
+			if (commonItemTable != null )
+			{
+				commonItemTable.Draw(new Rect(_compareDrawArea.width * 0.51f,f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
+			}
 
-		if(diffGroupTable0 != null )
-		diffGroupTable0.Draw(new Rect(5, _compareDrawArea.height*0.31f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+			if(diffGroupTable0 != null )
+			diffGroupTable0.Draw(new Rect(5, _compareDrawArea.height*0.31f+f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
 
-		if (diffItemTable0 != null )
-		{
-			diffItemTable0.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.31f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
-		}
+			if (diffItemTable0 != null )
+			{
+				diffItemTable0.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.31f+f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.3f));
+			}
 
-		if(diffGroupTable1 != null )
-		diffGroupTable1.Draw(new Rect(5, _compareDrawArea.height*0.62f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
+			if(diffGroupTable1 != null )
+			diffGroupTable1.Draw(new Rect(5, _compareDrawArea.height*0.62f+f, _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
 
-		if (diffItemTable1 != null )
-		{
-			diffItemTable1.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.62f,_compareDrawArea.width * 0.48f, _compareDrawArea.height-20));
-		}
+			if (diffItemTable1 != null )
+			{
+				diffItemTable1.Draw(new Rect(_compareDrawArea.width * 0.51f,_compareDrawArea.height*0.62f+f,_compareDrawArea.width * 0.48f, _compareDrawArea.height-20));
+			}
+
+        }
+        if(_compare && activeUnpackedsnapshots.Count >2)
+        {
+        	float f = 50f;
+        	if(moreGruopTab != null )
+			moreGruopTab.Draw(new Rect(5,f , _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.8f));
+
+			if (moreItemTab != null )
+			{
+				moreItemTab.Draw(new Rect(_compareDrawArea.width * 0.51f,f,_compareDrawArea.width * 0.48f, _compareDrawArea.height*0.8f));
+			}
+        }
+		
 
 
 		
