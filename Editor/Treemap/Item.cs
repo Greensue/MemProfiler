@@ -35,5 +35,12 @@ namespace Treemap
 		{
 			return (int)(_group != other._group ? other._group.totalMemorySize - _group.totalMemorySize : other.memorySize - memorySize);
 		}
+
+		public bool IsEqual(Item other)
+		{
+			return this.name.Equals(other.name);
+			//this._group._name.Equals(other._group._name) && 
+
+		}
 	}
 }

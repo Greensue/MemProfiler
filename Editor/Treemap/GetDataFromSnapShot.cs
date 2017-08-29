@@ -14,7 +14,7 @@ namespace Treemap
    	    CrawledMemorySnapshot _unpackedCrawl;
    	    private float memTltalSize = 0.0f;
    	    private Dictionary<string, Group> _groups = new Dictionary<string, Group>();
-		private Dictionary<string,Item> _items = new Dictionary<string,Item>();
+		private List<Item> _items = new  List<Item>();
 		public List<Group> _group0 = new List<Group>();
 		public string searchString;
 		public string sizeString;
@@ -43,7 +43,7 @@ namespace Treemap
 				return _groups;
 			}
 		}
-		public Dictionary<string,Item> AllItems
+		public List<Item> AllItems
 		{
 			get
 			{
@@ -64,11 +64,11 @@ namespace Treemap
 							_groups.Add(groupName, newGroup);
 						}
 						Item item = new Item(thing, _groups[groupName]);
-						if(!_items.ContainsKey(item.name))
-						{
-							_items.Add(item.name,item);
+						//if(!_items.ContainsKey(item.name))
+						//{
+							_items.Add(item);
 
-						}
+						//}
 						_groups[groupName]._items.Add(item);
 					}
 		

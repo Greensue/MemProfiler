@@ -34,6 +34,8 @@ public class WindowTest : EditorWindow {
 
 	Dictionary<string,Inspector> compareInspectors = new Dictionary<string,Inspector>();
 	List<Inspector> listCompareInspectors = new List<Inspector>();
+	List<string> _Keys = new List<string>();
+
 
 	Dictionary<string,CrawledMemorySnapshot> activeUnpackedsnapshots = new Dictionary<string,CrawledMemorySnapshot>();
 	static Dictionary<string,CrawledMemorySnapshot> unpackedsnapshots = new Dictionary<string,CrawledMemorySnapshot>();
@@ -88,7 +90,7 @@ public class WindowTest : EditorWindow {
 
 	void Awake()
 	{		
-		InitialTable(ref _gruopTable,ref _ItemTable,"","_gruopTable","_gruopTable");	
+		InitialTable(ref _gruopTable,ref _ItemTable,"","_gruopTable","_ItemTable");	
 		InitialTable(ref commonGroupTable,ref commonItemTable,"(COMMON)","commonGroupTable","commonItemTable");		
 		InitialTable(ref diffGroupTable0,ref diffItemTable0,"(SPECIAL IN0)","diffGroupTable0","diffItemTable0");
 		InitialTable(ref diffGroupTable1,ref diffItemTable1,"(SPECIAL IN1)","diffGroupTable1","diffItemTable1");
@@ -146,8 +148,16 @@ public class WindowTest : EditorWindow {
 		if (!_registered)
 		{
 			UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived += IncomingSnapshot;
+			UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived -= CompareIncomingSnapshot;
 			_registered = true;
 		}
+		if(_compareRegistered)
+		{
+			UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived -= CompareIncomingSnapshot;
+			_compareRegistered = false;
+
+		}
+
 		
 		
 		if (_unpackedCrawl == null && _packedCrawled != null && _packedCrawled.valid)
@@ -157,11 +167,17 @@ public class WindowTest : EditorWindow {
 	public void CompareInitial()
 	{
 		if (!_compareRegistered)
-			{
-				UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived += CompareIncomingSnapshot;
-				_compareRegistered = true;
-			}
-		
+		{
+			UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived += CompareIncomingSnapshot;
+			
+			_compareRegistered = true;
+		}
+		if(_registered)
+		{
+			UnityEditor.MemoryProfiler.MemorySnapshot.OnSnapshotReceived -= IncomingSnapshot;
+			_registered = false;
+		}
+	
 		/*if (_unpackedCrawl == null && _packedCrawled != null && _packedCrawled.valid)
 			Unpack();*/ 
 	}
@@ -194,7 +210,7 @@ public class WindowTest : EditorWindow {
 			_ItemTable.RefreshData(itemEntries);
 
 		}
-		if(_name.Equals("commonItemTable"))
+		if(_name.Equals("commonGroupTable"))
 		{
 			commonItemTable.RefreshData(itemEntries);
 
@@ -209,6 +225,12 @@ public class WindowTest : EditorWindow {
 			diffItemTable1.RefreshData(itemEntries);
 
 		}
+		if(_name.Equals("moreThan2Guop"))
+		{
+			moreItemTab.RefreshData(itemEntries);
+
+		}
+
 
 
 
@@ -250,18 +272,15 @@ public class WindowTest : EditorWindow {
 	}
 	void CompareIncomingSnapshot(PackedMemorySnapshot snapshot)
 	{
+		_snapshot = snapshot;
+
+		_packedCrawled = new Crawler().Crawl(_snapshot);
 		_unpackedCrawl = CrawlDataUnpacker.Unpack(_packedCrawled);
 		_inspector = new Inspector(this, _unpackedCrawl, _snapshot);
-		if(toolbarInt == 1)
-		{
+
 			DialogWindow _window = new DialogWindow();
 			_window = (DialogWindow)EditorWindow.GetWindow(typeof(DialogWindow));
 		    _window.ShowUtility();
-		}
-		
-
-		
-		
 		//listUnpcakSnapshots.Add(_unpackedCrawl);
 		listCompareInspectors.Add(_inspector);
 		refreshTables();
@@ -352,7 +371,7 @@ public class WindowTest : EditorWindow {
 	public void compareRefreshTables()
 	{
 		listUnpcakSnapshots.Clear();
-		foreach(string snapKey in activeUnpackedsnapshots.Keys)
+		foreach(string snapKey in _Keys)
 		{
 			listUnpcakSnapshots.Add(activeUnpackedsnapshots[snapKey]);
 
@@ -422,7 +441,7 @@ public class WindowTest : EditorWindow {
 
 	public void OnGUI()
 	{
-		Initialize();
+		
 		toolbarInt = GUILayout.Toolbar(toolbarInt, toolbarStrings, options);
 		if(toolbarInt == 0 )
 		{
@@ -444,6 +463,7 @@ public class WindowTest : EditorWindow {
 
 	public void drawSnapshotDisplay()
 	{
+		Initialize();
 		GUIStyle background = "AnimationCurveEditorBackground";
 		m_DrawArea.width = this.position.width - PAEditorConst.InspectorWidth;
 		m_DrawArea.height = this.position.height;
@@ -612,11 +632,16 @@ public class WindowTest : EditorWindow {
 	        	if(!activeUnpackedsnapshots.ContainsKey(st))
 	        	{
 		        	activeUnpackedsnapshots.Add(st,unpackedsnapshots[st]);
+		        	_Keys.Add(st);
+		        	_compare = false;
+
 		        	
 	        	}
 	        	else
 	        	{
 	        		activeUnpackedsnapshots.Remove(st);
+	        		_Keys.Remove(st);
+	        		_compare = false;
 	        	}
 
 	        }
@@ -639,6 +664,7 @@ public class WindowTest : EditorWindow {
         
         if(_compare && activeUnpackedsnapshots.Count == 2)
         {
+        	//compareRefreshTables();
         	float f = 50f;
         	if(commonGroupTable != null )
 			commonGroupTable.Draw(new Rect(5,f , _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.3f));
@@ -667,6 +693,7 @@ public class WindowTest : EditorWindow {
         }
         if(_compare && activeUnpackedsnapshots.Count >2)
         {
+        	
         	float f = 50f;
         	if(moreGruopTab != null )
 			moreGruopTab.Draw(new Rect(5,f , _compareDrawArea.width * 0.5f, _compareDrawArea.height*0.8f));
